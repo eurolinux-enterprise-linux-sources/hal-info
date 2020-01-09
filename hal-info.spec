@@ -1,11 +1,14 @@
 Summary: Device information files for HAL
 Name: hal-info
 Version: 20090716
-Release: 3.1%{?dist}
+Release: 5%{?dist}
 License: AFL or GPLv2
 Group: System Environment/Libraries
 URL: http://www.freedesktop.org/Software/hal
 Source0: http://hal.freedesktop.org/releases/%{name}-%{version}.tar.gz
+Source1: 30-keymap-module-toshiba-acpi.fdi
+
+Patch0: 0001-Fix-Lenovo-series-key-mapping.patch
 
 BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 BuildArch: noarch
@@ -19,12 +22,17 @@ known as .fdi files) for the hal package.
 %prep
 %setup -q
 
+%patch0 -p1 -b .lenovo
+
 %build
 %configure --enable-killswitch-dell-wlan=no --enable-killswitch-dell-bluetooth=no --enable-killswitch-dell-wwan=no
 
 %install
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
+
+# Toshiba acpi keys FDI file
+install -D -m 0644 %{SOURCE1} $RPM_BUILD_ROOT%{_datadir}/hal/fdi/information/10freedesktop/30-keymap-module-toshiba-acpi.fdi
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -36,6 +44,12 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/hal/fdi/preprobe/10osvendor/*.fdi
 
 %changelog
+* Thu Feb 05 2015 Benjamin Tissoires <benjamin.tissoires@redhat.com> 20090716-5
+- Add fdi file to re-map the touchpad toggle key on Toshiba laptops (#1172669)
+
+* Thu Dec 18 2014 Benjamin Tissoires <btissoir@redhat.com> - 20090716-4
+- Add patch to support new keys on Lenovo and fix the touchpad toggle mapping (#841419)
+
 * Mon Nov 30 2009 Dennis Gregorovic <dgregor@redhat.com> - 20090716-3.1
 - Rebuilt for RHEL 6
 
